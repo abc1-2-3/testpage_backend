@@ -1,0 +1,18 @@
+[
+  {
+    "ContainingType": "testEcpay.Controllers.EcpayController",
+    "Method": "CreateOrder",
+    "RelativePath": "api/Ecpay/CreateOrder",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "donateRequest",
+        "Type": "testEcpay.Model.DonateRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

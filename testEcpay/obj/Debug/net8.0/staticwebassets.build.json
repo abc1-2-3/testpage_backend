@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "HY2avHM5pjKiN8d+Bso18uRgdc4mMZW6cXztQQpeSj4=",
+  "Source": "testEcpay",
+  "BasePath": "_content/testEcpay",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
