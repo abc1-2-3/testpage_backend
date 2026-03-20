@@ -1,11 +1,1 @@
-{
-  "Version": 1,
-  "Hash": "HY2avHM5pjKiN8d+Bso18uRgdc4mMZW6cXztQQpeSj4=",
-  "Source": "testEcpay",
-  "BasePath": "_content/testEcpay",
-  "Mode": "Default",
-  "ManifestType": "Build",
-  "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
-}
+{"Version":1,"Hash":"nsw68jJs4rzZGqDGhFCK1upe7RHf6PP9UalwRtQ6T8s=","Source":"testEcpay","BasePath":"_content/testEcpay","Mode":"Default","ManifestType":"Build","ReferencedProjectsConfiguration":[],"DiscoveryPatterns":[],"Assets":[],"Endpoints":[]}
