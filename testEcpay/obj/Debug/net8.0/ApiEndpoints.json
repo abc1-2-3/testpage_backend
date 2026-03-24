@@ -1,6 +1,22 @@
 [
   {
     "ContainingType": "testEcpay.Controllers.EcpayController",
+    "Method": "Callback",
+    "RelativePath": "api/Ecpay/callback",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "data",
+        "Type": "System.Collections.Generic.Dictionary\u00602[[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "testEcpay.Controllers.EcpayController",
     "Method": "CreateOrder",
     "RelativePath": "api/Ecpay/CreateOrder",
     "HttpMethod": "POST",

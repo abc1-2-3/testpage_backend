@@ -8,27 +8,31 @@ namespace testEcpay.Helpers
     {
         public static string GenerateCheckMacValue(Dictionary<string, string> parameters, string hashKey, string hashIV)
         {
-            // 依照 key 排序
-            var sorted = parameters.OrderBy(p => p.Key).ToList();
-            var raw = new StringBuilder($"HashKey={hashKey}");
-            foreach (var kv in sorted)
+            var sorted = parameters
+        .Where(x => x.Key != "CheckMacValue")
+        .OrderBy(x => x.Key, StringComparer.Ordinal)
+        .Select(x => $"{x.Key}={x.Value}");
+
+            var raw = $"HashKey={hashKey}&{string.Join("&", sorted)}&HashIV={hashIV}";
+
+            // URL Encode 並處理 RFC 3986 差異
+            var urlEncoded = System.Web.HttpUtility.UrlEncode(raw)
+                .ToLower()
+                .Replace("+", "%20")
+                .Replace("%21", "!")
+                .Replace("%28", "(")
+                .Replace("%29", ")")
+                .Replace("%2a", "*")
+                .Replace("%7e", "~");
+
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
             {
-                raw.Append($"&{kv.Key}={kv.Value}");
+                var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(urlEncoded));
+                var sb = new StringBuilder();
+                foreach (var b in bytes)
+                    sb.Append(b.ToString("x2"));
+                return sb.ToString().ToUpper();
             }
-            raw.Append($"&HashIV={hashIV}");
-
-            var urlEncoded = HttpUtility.UrlEncode(raw.ToString()).ToLower();
-            urlEncoded = urlEncoded.Replace("%21", "!")
-                                   .Replace("%28", "(")
-                                   .Replace("%29", ")")
-                                   .Replace("%2a", "*")
-                                   .Replace("%2d", "-")
-                                   .Replace("%2e", ".")
-                                   .Replace("%5f", "_");
-
-            using var sha256 = SHA256.Create();
-            var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(urlEncoded));
-            return BitConverter.ToString(hash).Replace("-", "").ToUpper();
         }
     }
 }

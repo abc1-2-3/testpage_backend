@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
+using System.Web;
 using testEcpay.Helpers;
 using testEcpay.Model;
 namespace testEcpay.Controllers
@@ -25,7 +27,7 @@ namespace testEcpay.Controllers
                 { "TotalAmount", $"{donateRequest.Amount}" },
                 { "TradeDesc", "直播贊助" },
                 { "ItemName", "直播贊助" },
-                { "ReturnURL", "https://localhost:7157/api/ecpay/callback" },
+                { "ReturnURL", "https://ernestina-inferible-eerily.ngrok-free.dev/api/Ecpay/Callback" },
                 { "ChoosePayment", "Credit" },
                 { "ClientBackURL", "http://localhost:3000/donate" },
             };
@@ -63,6 +65,32 @@ namespace testEcpay.Controllers
             htmlForm.AppendLine("</html>");
 
             return Content(htmlForm.ToString(), "text/html; charset=utf-8");
+        }
+        [HttpPost("callback")]
+        [AllowAnonymous]
+        public IActionResult Callback([FromForm] Dictionary<string, string> data)
+        {
+            // 1. 驗證 CheckMacValue
+             if (!data.TryGetValue("CheckMacValue", out var checkMacValue))
+                return BadRequest("缺少 CheckMacValue");
+
+            var generatedMac = EcpayHelper.GenerateCheckMacValue(data, HashKey, HashIV);
+            if (!string.Equals(checkMacValue, generatedMac, StringComparison.OrdinalIgnoreCase))
+                return Content("0|CheckMacValue 驗證失敗");
+
+            // 2. 檢查交易是否成功
+            if (data.TryGetValue("RtnCode", out var rtnCode) && rtnCode == "1")
+            {
+                // 3. 這裡可以根據 MerchantTradeNo 更新訂單狀態
+                var merchantTradeNo = data["MerchantTradeNo"];
+                // TODO: 更新訂單狀態為已付款
+
+                // 4. 回傳 1|OK 給綠界
+                return Content("1|OK");
+            }
+
+            // 交易失敗
+            return Content("0|交易失敗");
         }
     }
 }
