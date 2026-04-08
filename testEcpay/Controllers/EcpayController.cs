@@ -1,96 +1,235 @@
+// Controllers/EcpayController.cs
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Text;
-using System.Web;
 using testEcpay.Helpers;
-using testEcpay.Model;
-namespace testEcpay.Controllers
+using testEcpay.Models;
+using testEcpay.Services;
+
+namespace testEcpay.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class EcpayController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class EcpayController : ControllerBase
+    private readonly IConfiguration _config;
+    private readonly IDonationService _donationService;
+
+    // 從 appsettings 讀取，不再寫死
+    private string MerchantID => _config["ECPay:MerchantID"]!;
+    private string HashKey => _config["ECPay:HashKey"]!;
+    private string HashIV => _config["ECPay:HashIV"]!;
+    private string BaseUrl => _config["ECPay:BaseUrl"]!;
+    private string ActionURL => _config["ECPay:Environment"] == "Production"
+        ? "https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5"
+        : "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5";
+
+    public EcpayController(IConfiguration config, IDonationService donationService)
     {
-        private const string MerchantID = "3002607";
-        private const string HashKey = "pwFHCqoQZGmho4w6";
-        private const string HashIV = "EkRm7iFT261dpevs";
-        private const string ActionURL = "https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5";
-
-        [HttpPost("CreateOrder")]
-        public IActionResult CreateOrder([FromBody] DonateRequest donateRequest)
-        {
-            var order = new Dictionary<string, string>
-            {
-                { "MerchantID", MerchantID },
-                { "MerchantTradeNo", $"TEST{DateTime.Now:yyyyMMddHHmmss}" },
-                { "MerchantTradeDate", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") },
-                { "PaymentType", "aio" },
-                { "TotalAmount", $"{donateRequest.Amount}" },
-                { "TradeDesc", "直播贊助" },
-                { "ItemName", "直播贊助" },
-                { "ReturnURL", "https://ernestina-inferible-eerily.ngrok-free.dev/api/Ecpay/Callback" },
-                { "ChoosePayment", "Credit" },
-                { "ClientBackURL", "http://localhost:3000/donate" },
-            };
-
-            var checkMacValue = EcpayHelper.GenerateCheckMacValue(order, HashKey, HashIV);
-            order.Add("CheckMacValue", checkMacValue);
-
-            var htmlForm = new StringBuilder();
-            htmlForm.AppendLine("<!DOCTYPE html>");
-            htmlForm.AppendLine("<html lang='zh-TW'>");
-            htmlForm.AppendLine("<head>");
-            htmlForm.AppendLine("  <meta charset='UTF-8' />");
-            htmlForm.AppendLine("  <title>前往付款中...</title>");
-            htmlForm.AppendLine("  <style>");
-            htmlForm.AppendLine("    body { font-family: sans-serif; text-align: center; padding-top: 100px; }");
-            htmlForm.AppendLine("    .loading { font-size: 20px; margin-top: 20px; animation: blink 1s infinite; }");
-            htmlForm.AppendLine("    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }");
-            htmlForm.AppendLine("  </style>");
-            htmlForm.AppendLine("</head>");
-            htmlForm.AppendLine("<body>");
-            htmlForm.AppendLine("  <p>正在為您導向綠界付款頁面，請稍候...</p>");
-            htmlForm.AppendLine("  <div class='loading'>⏳ 處理中...</div>");
-
-            htmlForm.AppendLine($"  <form id='ecpay' action='{ActionURL}' method='post'>");
-            foreach (var kv in order)
-            {
-                htmlForm.AppendLine($"    <input type='hidden' name='{kv.Key}' value='{kv.Value}' />");
-            }
-            htmlForm.AppendLine("  </form>");
-
-            htmlForm.AppendLine("  <script>");
-            htmlForm.AppendLine("    setTimeout(function() { document.getElementById('ecpay').submit(); }, 100);");
-            htmlForm.AppendLine("  </script>");
-            htmlForm.AppendLine("</body>");
-            htmlForm.AppendLine("</html>");
-
-            return Content(htmlForm.ToString(), "text/html; charset=utf-8");
-        }
-        [HttpPost("callback")]
-        [AllowAnonymous]
-        public IActionResult Callback([FromForm] Dictionary<string, string> data)
-        {
-            // 1. 驗證 CheckMacValue
-             if (!data.TryGetValue("CheckMacValue", out var checkMacValue))
-                return BadRequest("缺少 CheckMacValue");
-
-            var generatedMac = EcpayHelper.GenerateCheckMacValue(data, HashKey, HashIV);
-            if (!string.Equals(checkMacValue, generatedMac, StringComparison.OrdinalIgnoreCase))
-                return Content("0|CheckMacValue 驗證失敗");
-
-            // 2. 檢查交易是否成功
-            if (data.TryGetValue("RtnCode", out var rtnCode) && rtnCode == "1")
-            {
-                // 3. 這裡可以根據 MerchantTradeNo 更新訂單狀態
-                var merchantTradeNo = data["MerchantTradeNo"];
-                // TODO: 更新訂單狀態為已付款
-
-                // 4. 回傳 1|OK 給綠界
-                return Content("1|OK");
-            }
-
-            // 交易失敗
-            return Content("0|交易失敗");
-        }
+        _config = config;
+        _donationService = donationService;
     }
+
+    /// <summary>
+    /// 建立贊助訂單
+    /// POST /api/ecpay/create-order
+    /// 可選：帶 JWT 則綁定 userId，不帶也可以匿名贊助
+    /// </summary>
+    [HttpPost("create-order")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CreateOrder([FromBody] DonateRequest donateRequest)
+    {
+        // 1. 基本驗證
+        if (donateRequest.Amount <= 0 || donateRequest.Amount > 100000)
+            return BadRequest(new { error = "金額需介於 1 ~ 100,000 元" });
+
+        if (string.IsNullOrWhiteSpace(donateRequest.DonorName))
+            return BadRequest(new { error = "贊助者名稱不可為空" });
+
+        // 2. 取得登入用戶 ID（Optional，未登入也可以贊助）
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        // 3. 產生唯一訂單號，寫入 DB
+        var orderId = GenerateMerchantTradeNo();
+        await _donationService.CreateAsync(
+            orderId,
+            donateRequest.Amount,
+            userId,
+            donateRequest.DonorName,
+            donateRequest.Message
+        );
+
+        // 4. 組合綠界參數
+        var order = new Dictionary<string, string>
+        {
+            { "MerchantID",        MerchantID },
+            { "MerchantTradeNo",   orderId },
+            { "MerchantTradeDate", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") },
+            { "PaymentType",       "aio" },
+            { "TotalAmount",       $"{donateRequest.Amount}" },
+            { "TradeDesc",         "Magic Library Donation" },   // 純英數，不含特殊字元
+            { "ItemName",          $"{donateRequest.DonorName} 的魔法贊助" },
+            { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
+            { "OrderResultURL",    $"{BaseUrl}/api/ecpay/notify" },
+            { "ClientBackURL",     "https://your-nextjs.vercel.app/donate/result" },
+            { "ChoosePayment",     "Credit" },
+            { "EncryptType",       "1" },                         // 必填，SHA256
+        };
+
+        var checkMacValue = EcpayHelper.GenerateCheckMacValue(order, HashKey, HashIV);
+        order.Add("CheckMacValue", checkMacValue);
+
+        // 5. 回傳自動提交的 HTML form
+        var html = BuildAutoSubmitForm(ActionURL, order);
+        return Content(html, "text/html; charset=utf-8");
+    }
+
+    /// <summary>
+    /// 綠界付款結果 Webhook（Server-to-server）
+    /// POST /api/ecpay/notify
+    /// 綠界呼叫，不是前端呼叫，必須回傳 "1|OK"
+    /// </summary>
+    [HttpPost("notify")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Notify([FromForm] Dictionary<string, string> data)
+    {
+        // 1. 確認有 CheckMacValue
+        if (!data.TryGetValue("CheckMacValue", out var receivedMac))
+            return Content("0|Missing CheckMacValue");
+
+        // 2. 驗簽
+        var generatedMac = EcpayHelper.GenerateCheckMacValue(data, HashKey, HashIV);
+        if (!string.Equals(receivedMac, generatedMac, StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine($"[ECPay Notify] 驗簽失敗 received={receivedMac} generated={generatedMac}");
+            return Content("0|CheckMacValue Error");
+        }
+
+        var merchantTradeNo = data.GetValueOrDefault("MerchantTradeNo", "");
+        var rtnCode = data.GetValueOrDefault("RtnCode", "");
+        var tradeAmtStr = data.GetValueOrDefault("TradeAmt", "0");
+
+        // 3. 找訂單
+        var donation = await _donationService.GetByOrderIdAsync(merchantTradeNo);
+        if (donation == null)
+        {
+            Console.WriteLine($"[ECPay Notify] 找不到訂單: {merchantTradeNo}");
+            return Content("0|Order Not Found");
+        }
+
+        // 4. 冪等：已處理過就直接回 OK
+        if (donation.Status == DonationStatus.Paid)
+            return Content("1|OK");
+
+        // 5. 驗證金額防篡改
+        if (int.TryParse(tradeAmtStr, out var tradeAmt) && tradeAmt != donation.Amount)
+        {
+            Console.WriteLine($"[ECPay Notify] 金額不符 received={tradeAmt} expected={donation.Amount}");
+            return Content("0|Amount Mismatch");
+        }
+
+        // 6. 更新訂單狀態
+        var newStatus = rtnCode == "1" ? DonationStatus.Paid : DonationStatus.Failed;
+        await _donationService.UpdateStatusAsync(merchantTradeNo, newStatus);
+
+        Console.WriteLine($"[ECPay Notify] orderId={merchantTradeNo} status={newStatus}");
+        return Content("1|OK");
+    }
+
+    /// <summary>
+    /// 查詢訂單狀態（付款完成後前端輪詢用）
+    /// GET /api/ecpay/status/{orderId}
+    /// </summary>
+    [HttpGet("status/{orderId}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetStatus(string orderId)
+    {
+        var donation = await _donationService.GetByOrderIdAsync(orderId);
+        if (donation == null)
+            return NotFound(new { error = "找不到訂單" });
+
+        return Ok(new DonationStatusResponse(
+            OrderId: donation.OrderId,
+            Amount: donation.Amount,
+            DonorName: donation.DonorName,
+            Message: donation.Message,
+            Status: donation.Status.ToString(),
+            CreatedAt: donation.CreatedAt
+        ));
+    }
+
+    /// <summary>
+    /// 取得最近付款成功的贊助（直播頁跑馬燈用）
+    /// GET /api/ecpay/recent
+    /// </summary>
+    [HttpGet("recent")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetRecent([FromQuery] int limit = 20)
+    {
+        var donations = await _donationService.GetRecentAsync(Math.Min(limit, 50));
+        return Ok(donations.Select(d => new
+        {
+            donorName = d.DonorName,
+            amount = d.Amount,
+            message = d.Message,
+            createdAt = d.CreatedAt
+        }));
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private static string GenerateMerchantTradeNo()
+    {
+        var ts = DateTime.Now.ToString("yyyyMMddHHmmss");
+        var rand = Random.Shared.Next(0, 1000).ToString("D3");
+        return $"DON{ts}{rand}"; // 20 chars
+    }
+
+    private static string BuildAutoSubmitForm(string actionUrl, Dictionary<string, string> parameters)
+    {
+        var inputs = string.Join("\n", parameters.Select(kv =>
+            $"    <input type=\"hidden\" name=\"{EscapeHtml(kv.Key)}\" value=\"{EscapeHtml(kv.Value)}\" />"));
+
+        return $$"""
+        <!DOCTYPE html>
+        <html lang="zh-TW">
+        <head>
+          <meta charset="UTF-8" />
+          <title>前往付款中...</title>
+          <style>
+            body {
+              font-family: "Noto Serif TC", serif;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              margin: 0;
+              background: #1a1228;
+              color: #e8d5b7;
+            }
+            .rune { font-size: 48px; animation: spin 3s linear infinite; }
+            p { font-size: 18px; margin-top: 16px; opacity: 0.8; }
+            @keyframes spin { to { transform: rotate(360deg); } }
+          </style>
+        </head>
+        <body>
+          <div class="rune">✦</div>
+          <p>正在施展魔法，導向綠界付款頁面...</p>
+          <form id="ecpay" action="{{actionUrl}}" method="post">
+        {{inputs}}
+          </form>
+          <script>
+            setTimeout(function () {
+              document.getElementById("ecpay").submit();
+            }, 500);
+          </script>
+        </body>
+        </html>
+        """;
+    }
+
+    private static string EscapeHtml(string str) =>
+        str.Replace("&", "&amp;").Replace("\"", "&quot;").Replace("<", "&lt;").Replace(">", "&gt;");
 }

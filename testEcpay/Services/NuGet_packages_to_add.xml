@@ -1,0 +1,27 @@
+<!--
+  把下面這幾個 <PackageReference> 加進你的 testEcpay.csproj
+  加在現有的 <ItemGroup> 裡，或新增一個 <ItemGroup>
+-->
+
+<ItemGroup>
+  <!-- PostgreSQL 驅動 -->
+  <PackageReference Include="Npgsql" Version="8.0.3" />
+
+  <!-- Dapper（輕量 ORM，直接寫 SQL）-->
+  <PackageReference Include="Dapper" Version="2.1.35" />
+
+  <!-- JWT 驗證 -->
+  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.7" />
+
+  <!-- JWT 簽發需要 -->
+  <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.6.3" />
+</ItemGroup>
+
+<!--
+  安裝指令（在 testEcpay 資料夾下執行）：
+
+  dotnet add package Npgsql
+  dotnet add package Dapper
+  dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer
+  dotnet add package System.IdentityModel.Tokens.Jwt
+-->

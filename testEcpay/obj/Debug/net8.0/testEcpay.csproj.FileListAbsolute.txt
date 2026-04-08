@@ -59,7 +59,6 @@ D:\GitLab\testpage_backend\testEcpay\obj\Debug\net8.0\staticwebassets.build.json
 D:\GitLab\testpage_backend\testEcpay\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\GitLab\testpage_backend\testEcpay\obj\Debug\net8.0\staticwebassets.development.json
 D:\GitLab\testpage_backend\testEcpay\obj\Debug\net8.0\staticwebassets.build.endpoints.json
-D:\GitLab\testpage_backend\testEcpay\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\GitLab\testpage_backend\testEcpay\obj\Debug\net8.0\testEcpay.csproj.Up2Date
 D:\GitLab\testpage_backend\testEcpay\obj\Debug\net8.0\testEcpay.dll
 D:\GitLab\testpage_backend\testEcpay\obj\Debug\net8.0\refint\testEcpay.dll
@@ -99,3 +98,14 @@ D:\GitHub\testpage_backend\testEcpay\obj\Debug\net8.0\refint\testEcpay.dll
 D:\GitHub\testpage_backend\testEcpay\obj\Debug\net8.0\testEcpay.pdb
 D:\GitHub\testpage_backend\testEcpay\obj\Debug\net8.0\testEcpay.genruntimeconfig.cache
 D:\GitHub\testpage_backend\testEcpay\obj\Debug\net8.0\ref\testEcpay.dll
+D:\GitLab\testpage_backend\testEcpay\bin\Debug\net8.0\Dapper.dll
+D:\GitLab\testpage_backend\testEcpay\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\GitLab\testpage_backend\testEcpay\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+D:\GitLab\testpage_backend\testEcpay\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+D:\GitLab\testpage_backend\testEcpay\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+D:\GitLab\testpage_backend\testEcpay\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+D:\GitLab\testpage_backend\testEcpay\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+D:\GitLab\testpage_backend\testEcpay\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+D:\GitLab\testpage_backend\testEcpay\bin\Debug\net8.0\Npgsql.dll
+D:\GitLab\testpage_backend\testEcpay\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
+D:\GitLab\testpage_backend\testEcpay\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
