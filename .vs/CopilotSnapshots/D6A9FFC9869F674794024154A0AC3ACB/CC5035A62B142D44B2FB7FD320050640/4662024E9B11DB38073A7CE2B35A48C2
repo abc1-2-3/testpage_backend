@@ -1,4 +1,4 @@
-// Controllers/EcpayController.cs
+﻿// Controllers/EcpayController.cs
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -217,33 +217,33 @@ public class EcpayController : ControllerBase
         var inputs = string.Join("\n", parameters.Select(kv =>
             $"    <input type=\"hidden\" name=\"{EscapeHtml(kv.Key)}\" value=\"{EscapeHtml(kv.Value)}\" />"));
 
-        return $$"""
+        return $"""
             <!DOCTYPE html>
             <html lang="zh-TW">
             <head>
               <meta charset="UTF-8" />
               <title>前往付款中...</title>
               <style>
-                body {
+                body {{
                   font-family: "Noto Serif TC", serif;
                   display: flex; flex-direction: column;
                   align-items: center; justify-content: center;
                   min-height: 100vh; margin: 0;
                   background: #1a1228; color: #e8d5b7;
-                }
-                .rune { font-size: 48px; animation: spin 3s linear infinite; }
-                p { font-size: 18px; margin-top: 16px; opacity: 0.8; }
-                @keyframes spin { to { transform: rotate(360deg); } }
+                }}
+                .rune {{ font-size: 48px; animation: spin 3s linear infinite; }}
+                p {{ font-size: 18px; margin-top: 16px; opacity: 0.8; }}
+                @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
               </style>
             </head>
             <body>
               <div class="rune">✦</div>
               <p>正在施展魔法，導向綠界付款頁面...</p>
-              <form id="ecpay" action="{{actionUrl}}" method="post">
-            {{inputs}}
+              <form id="ecpay" action="{actionUrl}" method="post">
+            {inputs}
               </form>
               <script>
-                setTimeout(function () { document.getElementById("ecpay").submit(); }, 500);
+                setTimeout(function () {{ document.getElementById("ecpay").submit(); }}, 500);
               </script>
             </body>
             </html>

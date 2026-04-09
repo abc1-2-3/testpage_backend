@@ -16,6 +16,7 @@ var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<st
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHostedService<PendingOrderCleanupService>();
 
 // ── CORS（允許 Next.js 前端呼叫）────────────────────────────────────────────
 builder.Services.AddCors(options =>
