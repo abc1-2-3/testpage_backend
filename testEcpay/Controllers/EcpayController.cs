@@ -64,7 +64,7 @@ public class EcpayController : ControllerBase
             { "PaymentType",       "aio" },
             { "TotalAmount",       $"{donateRequest.Amount}" },
             { "TradeDesc",         "Magic Library Donation" },
-            { "ItemName",          $"{donateRequest.DonorName} Magic Donation" },
+            { "ItemName", "Magic Donation" },
             { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
             { "OrderResultURL",    $"{BaseUrl}/api/ecpay/notify" },
             { "ClientBackURL",     $"{FrontendUrl}/donate/result" },
@@ -77,6 +77,13 @@ public class EcpayController : ControllerBase
 
         var checkMacValue = EcpayHelper.GenerateCheckMacValue(order, HashKey, HashIV);
         order.Add("CheckMacValue", checkMacValue);
+
+        // 加這段 log
+        Console.WriteLine("=== ECPay Params ===");
+        foreach (var kv in order)
+            Console.WriteLine($"{kv.Key}={kv.Value}");
+        Console.WriteLine($"CheckMacValue={checkMacValue}");
+        Console.WriteLine("===================");
 
         return Content(BuildAutoSubmitForm(ActionURL, order), "text/html; charset=utf-8");
     }
