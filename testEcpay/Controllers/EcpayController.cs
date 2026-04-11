@@ -245,7 +245,33 @@ public class EcpayController : ControllerBase
             actionUrl = ActionURL
         });
     }
+    [HttpGet("test-payment")]
+    [AllowAnonymous]
+    public IActionResult TestPayment()
+    {
+        var order = new Dictionary<string, string>
+    {
+        { "MerchantID",        MerchantID },
+        { "MerchantTradeNo",   $"TEST{DateTime.Now:yyyyMMddHHmmss}" },
+        { "MerchantTradeDate", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") },
+        { "PaymentType",       "aio" },
+        { "TotalAmount",       "100" },
+        { "TradeDesc",         "test" },
+        { "ItemName",          "test" },
+        { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
+        { "ChoosePayment",     "Credit" },
+        { "EncryptType",       "1" },
+    };
 
+        var checkMacValue = EcpayHelper.GenerateCheckMacValue(order, HashKey, HashIV);
+        order.Add("CheckMacValue", checkMacValue);
+
+        Console.WriteLine("=== TEST PAYMENT ===");
+        foreach (var kv in order)
+            Console.WriteLine($"  {kv.Key}={kv.Value}");
+
+        return Content(BuildAutoSubmitForm(ActionURL, order), "text/html; charset=utf-8");
+    }
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static string GenerateMerchantTradeNo()
