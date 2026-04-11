@@ -65,7 +65,6 @@ public class EcpayController : ControllerBase
             { "TotalAmount",       $"{donateRequest.Amount}" },
             { "TradeDesc",         "Magic Library Donation" },
             { "ItemName", "Magic Donation" },
-            { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
             { "OrderResultURL",    $"{BaseUrl}/api/ecpay/notify" },
             { "ClientBackURL", $"{FrontendUrl}/donate/result" },
             { "ChoosePayment",     "Credit" },

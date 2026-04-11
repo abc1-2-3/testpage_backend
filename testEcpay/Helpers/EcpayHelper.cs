@@ -14,8 +14,6 @@ namespace testEcpay.Helpers
         .Select(x => $"{x.Key}={x.Value}");
 
             var raw = $"HashKey={hashKey}&{string.Join("&", sorted)}&HashIV={hashIV}";
-            // 加這行
-            Console.WriteLine($"[CheckMac Raw] {raw}");
 
             // URL Encode 並處理 RFC 3986 差異
             var urlEncoded = System.Web.HttpUtility.UrlEncode(raw)
@@ -26,7 +24,8 @@ namespace testEcpay.Helpers
                 .Replace("%29", ")")
                 .Replace("%2a", "*")
                 .Replace("%7e", "~");
-
+            // 加這行
+            Console.WriteLine($"[CheckMac Encoded] {urlEncoded}");
             using (var sha256 = System.Security.Cryptography.SHA256.Create())
             {
                 var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(urlEncoded));
