@@ -197,6 +197,37 @@ public class EcpayController : ControllerBase
             createdAt = d.CreatedAt
         }));
     }
+    /// <summary>
+    /// 測試用：驗證 CheckMac 計算是否正確
+    /// GET /api/ecpay/test-checkmac
+    /// </summary>
+    [HttpGet("test-checkmac")]
+    [AllowAnonymous]
+    public IActionResult TestCheckMac()
+    {
+        // 用固定參數，方便手動驗算
+        var testParams = new Dictionary<string, string>
+    {
+        { "MerchantID",        "3002607" },
+        { "MerchantTradeNo",   "TestOrder001" },
+        { "MerchantTradeDate", "2026/01/01 00:00:00" },
+        { "PaymentType",       "aio" },
+        { "TotalAmount",       "100" },
+        { "TradeDesc",         "test" },
+        { "ItemName",          "test" },
+        { "ReturnURL",         "https://example.com/notify" },
+        { "ChoosePayment",     "Credit" },
+        { "EncryptType",       "1" },
+    };
+
+        var checkMac = EcpayHelper.GenerateCheckMacValue(testParams, HashKey, HashIV);
+
+        return Ok(new
+        {
+            checkMacValue = checkMac,
+            note = "拿這個值去 https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5 或線上 SHA256 工具驗算"
+        });
+    }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
