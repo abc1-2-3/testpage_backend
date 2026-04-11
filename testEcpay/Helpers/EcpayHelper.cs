@@ -17,7 +17,7 @@ public static class EcpayHelper
     {
         // 1. 排除 CheckMacValue，依 key 字母順序（Ordinal）排序
         var sorted = parameters
-            .Where(x => x.Key != "CheckMacValue")
+            .Where(x => x.Key != "CheckMacValue" && x.Key != "EncryptType")
             .OrderBy(x => x.Key, StringComparer.Ordinal)
             .Select(x => $"{x.Key}={x.Value}");
 
