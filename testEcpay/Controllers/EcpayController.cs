@@ -67,6 +67,7 @@ public class EcpayController : ControllerBase
             { "ItemName",          "test" },
             { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
             { "ChoosePayment",     "Credit" },
+            { "EncryptType", "1" },
         };
 
         var checkMacValue = EcpayHelper.GenerateCheckMacValue(order, HashKey, HashIV);
