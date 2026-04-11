@@ -66,7 +66,7 @@ public class EcpayController : ControllerBase
             { "TradeDesc",         "Magic Library Donation" },  // 改回來，不是 "test"
             { "ItemName",          $"{donateRequest.DonorName} Magic Donation" }, // 改回來
             { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
-            { "OrderResultURL",    $"{BaseUrl}/api/ecpay/notify" },
+            { "OrderResultURL", $"{FrontendUrl}/donate/result" },
             { "ClientBackURL",     $"{FrontendUrl}/donate/result" },
             { "ChoosePayment",     "Credit" },
             { "EncryptType",       "1" },
