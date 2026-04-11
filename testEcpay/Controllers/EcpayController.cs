@@ -67,7 +67,7 @@ public class EcpayController : ControllerBase
             { "ItemName", "Magic Donation" },
             { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
             { "OrderResultURL",    $"{BaseUrl}/api/ecpay/notify" },
-            { "ClientBackURL",     $"{FrontendUrl}/donate/result" },
+            { "ClientBackURL", $"{FrontendUrl}/donate/result" },
             { "ChoosePayment",     "Credit" },
             { "EncryptType",       "1" },
             // CustomField1 帶入 userId 作為備援
@@ -77,13 +77,6 @@ public class EcpayController : ControllerBase
 
         var checkMacValue = EcpayHelper.GenerateCheckMacValue(order, HashKey, HashIV);
         order.Add("CheckMacValue", checkMacValue);
-
-        // 加這段 log
-        Console.WriteLine("=== ECPay Params ===");
-        foreach (var kv in order)
-            Console.WriteLine($"{kv.Key}={kv.Value}");
-        Console.WriteLine($"CheckMacValue={checkMacValue}");
-        Console.WriteLine("===================");
 
         return Content(BuildAutoSubmitForm(ActionURL, order), "text/html; charset=utf-8");
     }

@@ -14,6 +14,8 @@ namespace testEcpay.Helpers
         .Select(x => $"{x.Key}={x.Value}");
 
             var raw = $"HashKey={hashKey}&{string.Join("&", sorted)}&HashIV={hashIV}";
+            // 加這行
+            Console.WriteLine($"[CheckMac Raw] {raw}");
 
             // URL Encode 並處理 RFC 3986 差異
             var urlEncoded = System.Web.HttpUtility.UrlEncode(raw)
