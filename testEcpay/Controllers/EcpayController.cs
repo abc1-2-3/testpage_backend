@@ -63,20 +63,18 @@ public class EcpayController : ControllerBase
             { "MerchantTradeDate", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") },
             { "PaymentType",       "aio" },
             { "TotalAmount",       $"{donateRequest.Amount}" },
-            { "TradeDesc",         "test" },
-            { "ItemName",          "test" },
+            { "TradeDesc",         "Magic Library Donation" },  // 改回來，不是 "test"
+            { "ItemName",          $"{donateRequest.DonorName} Magic Donation" }, // 改回來
             { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
+            { "OrderResultURL",    $"{BaseUrl}/api/ecpay/notify" },
+            { "ClientBackURL",     $"{FrontendUrl}/donate/result" },
             { "ChoosePayment",     "Credit" },
-            { "EncryptType", "1" },
+            { "EncryptType",       "1" },
+            { "CustomField1",      userId ?? "" },
         };
-
         var checkMacValue = EcpayHelper.GenerateCheckMacValue(order, HashKey, HashIV);
         order.Add("CheckMacValue", checkMacValue);
-        return Ok(new
-        {
-            actionUrl = ActionURL,
-            parameters = order
-        });
+        return Content(BuildAutoSubmitForm(ActionURL, order), "text/html; charset=utf-8");
     }
 
     /// <summary>
@@ -199,78 +197,6 @@ public class EcpayController : ControllerBase
             message   = d.Message,
             createdAt = d.CreatedAt
         }));
-    }
-    /// <summary>
-    /// 測試用：驗證 CheckMac 計算是否正確
-    /// GET /api/ecpay/test-checkmac
-    /// </summary>
-    [HttpGet("test-checkmac")]
-    [AllowAnonymous]
-    public IActionResult TestCheckMac()
-    {
-        // 用固定參數，方便手動驗算
-        var testParams = new Dictionary<string, string>
-    {
-        { "MerchantID",        "3002607" },
-        { "MerchantTradeNo",   "TestOrder001" },
-        { "MerchantTradeDate", "2026/01/01 00:00:00" },
-        { "PaymentType",       "aio" },
-        { "TotalAmount",       "100" },
-        { "TradeDesc",         "test" },
-        { "ItemName",          "test" },
-        { "ReturnURL",         "https://example.com/notify" },
-        { "ChoosePayment",     "Credit" },
-        { "EncryptType",       "1" },
-    };
-
-        var checkMac = EcpayHelper.GenerateCheckMacValue(testParams, HashKey, HashIV);
-
-        return Ok(new
-        {
-            checkMacValue = checkMac,
-            note = "拿這個值去 https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5 或線上 SHA256 工具驗算"
-        });
-    }
-    [HttpGet("debug-config")]
-    [AllowAnonymous]
-    public IActionResult DebugConfig()
-    {
-        return Ok(new
-        {
-            merchantId = MerchantID,
-            hashKey = HashKey.Substring(0, 4) + "****",  // 只顯示前4碼保護 secret
-            hashIV = HashIV.Substring(0, 4) + "****",
-            environment = _config["ECPay:Environment"],
-            baseUrl = BaseUrl,
-            actionUrl = ActionURL
-        });
-    }
-    [HttpGet("test-payment")]
-    [AllowAnonymous]
-    public IActionResult TestPayment()
-    {
-        var order = new Dictionary<string, string>
-    {
-        { "MerchantID",        MerchantID },
-        { "MerchantTradeNo",   $"TEST{DateTime.Now:yyyyMMddHHmmss}" },
-        { "MerchantTradeDate", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") },
-        { "PaymentType",       "aio" },
-        { "TotalAmount",       "100" },
-        { "TradeDesc",         "test" },
-        { "ItemName",          "test" },
-        { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
-        { "ChoosePayment",     "Credit" },
-        { "EncryptType",       "1" },
-    };
-
-        var checkMacValue = EcpayHelper.GenerateCheckMacValue(order, HashKey, HashIV);
-        order.Add("CheckMacValue", checkMacValue);
-
-        Console.WriteLine("=== TEST PAYMENT ===");
-        foreach (var kv in order)
-            Console.WriteLine($"  {kv.Key}={kv.Value}");
-
-        return Content(BuildAutoSubmitForm(ActionURL, order), "text/html; charset=utf-8");
     }
     // ── Helpers ───────────────────────────────────────────────────────────────
 

@@ -37,7 +37,7 @@ public static class EcpayHelper
     /// <summary>
     /// 綠界的 URL Encode 規則：
     /// 對整個字串 encode，但保留 ! ( ) * ~ 這些字元不 encode
-    /// 空白 encode 成 %20
+    /// 空白 encode 成 +（不是 %20）
     /// </summary>
     private static string EncodeForEcpay(string input)
     {
@@ -49,6 +49,10 @@ public static class EcpayHelper
             if (IsUnreserved(c))
             {
                 sb.Append(c);
+            }
+            else if (c == ' ')      // ← 加這個
+            {
+                sb.Append('+');     // 空白用 + 不是 %20
             }
             else
             {
