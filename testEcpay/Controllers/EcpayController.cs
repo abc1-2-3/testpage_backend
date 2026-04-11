@@ -39,8 +39,8 @@ public class EcpayController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> CreateOrder([FromBody] DonateRequest donateRequest)
     {
-        if (donateRequest.Amount <= 0 || donateRequest.Amount > 100000)
-            return BadRequest(new { error = "金額需介於 1 ~ 100,000 元" });
+        if (donateRequest.Amount <= 10 || donateRequest.Amount > 100000)
+            return BadRequest(new { error = "金額需介於 10 ~ 100,000 元" });
 
         if (string.IsNullOrWhiteSpace(donateRequest.DonorName))
             return BadRequest(new { error = "贊助者名稱不可為空" });
@@ -72,8 +72,11 @@ public class EcpayController : ControllerBase
 
         var checkMacValue = EcpayHelper.GenerateCheckMacValue(order, HashKey, HashIV);
         order.Add("CheckMacValue", checkMacValue);
-
-        return Content(BuildAutoSubmitForm(ActionURL, order), "text/html; charset=utf-8");
+        return Ok(new
+        {
+            actionUrl = ActionURL,
+            parameters = order
+        });
     }
 
     /// <summary>
