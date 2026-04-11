@@ -231,6 +231,20 @@ public class EcpayController : ControllerBase
             note = "拿這個值去 https://payment-stage.ecpay.com.tw/Cashier/QueryTradeInfo/V5 或線上 SHA256 工具驗算"
         });
     }
+    [HttpGet("debug-config")]
+    [AllowAnonymous]
+    public IActionResult DebugConfig()
+    {
+        return Ok(new
+        {
+            merchantId = MerchantID,
+            hashKey = HashKey.Substring(0, 4) + "****",  // 只顯示前4碼保護 secret
+            hashIV = HashIV.Substring(0, 4) + "****",
+            environment = _config["ECPay:Environment"],
+            baseUrl = BaseUrl,
+            actionUrl = ActionURL
+        });
+    }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
