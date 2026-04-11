@@ -63,15 +63,11 @@ public class EcpayController : ControllerBase
             { "MerchantTradeDate", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") },
             { "PaymentType",       "aio" },
             { "TotalAmount",       $"{donateRequest.Amount}" },
-            { "TradeDesc",         "Magic Library Donation" },
-            { "ItemName", "Magic Donation" },
-            { "OrderResultURL",    $"{BaseUrl}/api/ecpay/notify" },
-            { "ClientBackURL", $"{FrontendUrl}/donate/result" },
+            { "TradeDesc",         "test" },
+            { "ItemName",          "test" },
+            { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
             { "ChoosePayment",     "Credit" },
             { "EncryptType",       "1" },
-            // CustomField1 帶入 userId 作為備援
-            // notify 回來時即使 DB 查詢有問題，也能從綠界參數拿到是誰付的款
-            { "CustomField1",      userId ?? "" },
         };
 
         var checkMacValue = EcpayHelper.GenerateCheckMacValue(order, HashKey, HashIV);
