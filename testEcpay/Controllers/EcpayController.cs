@@ -67,7 +67,7 @@ public class EcpayController : ControllerBase
             { "ItemName",          $"{donateRequest.DonorName} Magic Donation" }, // 改回來
             { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
             { "OrderResultURL", $"{FrontendUrl}/api/ecpay/result" },
-            { "ClientBackURL",     $"{FrontendUrl}/donate/result" },
+            { "ClientBackURL", $"{FrontendUrl}/order-result" },
             { "ChoosePayment",     "Credit" },
             { "EncryptType",       "1" },
             { "CustomField1",      userId ?? "" },
