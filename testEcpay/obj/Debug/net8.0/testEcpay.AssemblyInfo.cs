@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("testEcpay")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+85a7c2fc25b4112baea50d4cf6b735d44ce6caad")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e6aac56a87c713fe8bc996649b40161fd38d338e")]
 [assembly: System.Reflection.AssemblyProductAttribute("testEcpay")]
 [assembly: System.Reflection.AssemblyTitleAttribute("testEcpay")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -39,7 +39,7 @@ public class EcpayController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> CreateOrder([FromBody] DonateRequest donateRequest)
     {
-        if (donateRequest.Amount <= 10 || donateRequest.Amount > 100000)
+        if (donateRequest.Amount < 10 || donateRequest.Amount > 100000)
             return BadRequest(new { error = "金額需介於 10 ~ 100,000 元" });
 
         if (string.IsNullOrWhiteSpace(donateRequest.DonorName))
@@ -63,8 +63,8 @@ public class EcpayController : ControllerBase
             { "MerchantTradeDate", DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss") },
             { "PaymentType",       "aio" },
             { "TotalAmount",       $"{donateRequest.Amount}" },
-            { "TradeDesc",         "Magic Library Donation" },  // 改回來，不是 "test"
-            { "ItemName",          $"{donateRequest.DonorName} Magic Donation" }, // 改回來
+            { "TradeDesc",         "Magic Library Donation" }, 
+            { "ItemName",          $"{donateRequest.DonorName} Magic Donation" }, 
             { "ReturnURL",         $"{BaseUrl}/api/ecpay/notify" },
             { "OrderResultURL", $"{FrontendUrl}/api/ecpay/result" },
             { "ClientBackURL", $"{FrontendUrl}/order-result" },
@@ -92,14 +92,13 @@ public class EcpayController : ControllerBase
         var generatedMac = EcpayHelper.GenerateCheckMacValue(data, HashKey, HashIV);
         if (!string.Equals(receivedMac, generatedMac, StringComparison.OrdinalIgnoreCase))
         {
-            Console.WriteLine($"[ECPay Notify] 驗簽失敗 received={receivedMac} generated={generatedMac}");
             return Content("0|CheckMacValue Error");
         }
 
         var merchantTradeNo = data.GetValueOrDefault("MerchantTradeNo", "");
         var rtnCode         = data.GetValueOrDefault("RtnCode", "");
         var tradeAmtStr     = data.GetValueOrDefault("TradeAmt", "0");
-        var customField1    = data.GetValueOrDefault("CustomField1", ""); // userId 備援
+        var customField1    = data.GetValueOrDefault("CustomField1", ""); 
 
         var donation = await _donationService.GetByOrderIdAsync(merchantTradeNo);
         if (donation == null)
@@ -126,7 +125,6 @@ public class EcpayController : ControllerBase
         var newStatus = rtnCode == "1" ? DonationStatus.Paid : DonationStatus.Failed;
         await _donationService.UpdateStatusAsync(merchantTradeNo, newStatus, resolvedUserId);
 
-        Console.WriteLine($"[ECPay Notify] orderId={merchantTradeNo} status={newStatus} userId={resolvedUserId}");
         return Content("1|OK");
     }
 

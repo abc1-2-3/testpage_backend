@@ -120,3 +120,4 @@ D:\GitHub\testpage_backend\testEcpay\bin\Debug\net8.0\Microsoft.IdentityModel.To
 D:\GitHub\testpage_backend\testEcpay\bin\Debug\net8.0\Npgsql.dll
 D:\GitHub\testpage_backend\testEcpay\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
 D:\GitHub\testpage_backend\testEcpay\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll
+D:\GitLab\testpage_backend\testEcpay\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
